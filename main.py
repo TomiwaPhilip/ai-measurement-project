@@ -10,11 +10,11 @@ app = Flask(__name__)
 @app.route('/predict', methods=["POST"])
 def send_prediction():
 
-    # Get the image from the request
-    image_data = request.get_data()
+    # Get the image url from the request
+    image_url = request.args.get('image_url')
 
     # Perform inference using the TensorFlow model
-    keypoints = preprocess_and_predict(image_data)
+    keypoints = preprocess_and_predict(image_url)
 
     # Perform measurements
     results = get_measurements(keypoints)
