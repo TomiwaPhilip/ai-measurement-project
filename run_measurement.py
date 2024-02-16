@@ -1,5 +1,34 @@
 import numpy as np
 
+
+def get_measurements(keypoints):
+    real_world_coordinates = transform_points_coord(keypoints)
+    sc = scale_coord(real_world_coordinates, 1.5)
+    left_shoulder = sc[5]
+    right_shoulder = sc[6]
+    left_elbow = sc[7]
+    # right_elbow = sc[8]
+    left_wrist = sc[9]
+    # right_wrist = sc[10]
+    left_hip = sc[11]
+    right_hip = sc[12]
+    left_knee = sc[13]
+    # right_knee = sc[14]
+    left_ankle = sc[15]
+    # right_ankle = sc[16]
+
+    calculate_body_measurements(left_shoulder,
+                                right_shoulder,
+                                left_hip,
+                                right_hip,
+                                left_knee,
+                                left_elbow,
+                                left_wrist,
+                                left_ankle)
+
+    return
+
+
 # Load calibration parameters
 mtx_loaded = None
 dist_loaded = None
@@ -101,16 +130,13 @@ def calculate_body_measurements(left_shoulder,
     shoulder_hip_measurement = euclidean_distance(left_shoulder, left_hip)
     hip_knee_measurement = euclidean_distance(left_hip, left_knee) / 2
     top_measurement = shoulder_hip_measurement + hip_knee_measurement
-    print(f'The top measurement is {top_measurement}')
 
     # Shoulder Measurement
     shoulder_measurement = euclidean_distance(right_shoulder, left_shoulder)
-    print(f'The shoulder measurement is {shoulder_measurement}')
 
     # Chest Measurement
     chest_measurement = calculate_circumference(
         right_shoulder, left_shoulder) / 2 * 2
-    print(f'The chest measurement is {chest_measurement}')
 
     # Hand measurement
     leftShoulder_leftElbow_measurement = euclidean_distance(
@@ -119,28 +145,26 @@ def calculate_body_measurements(left_shoulder,
         left_elbow, left_wrist)
     hand_measurement = leftShoulder_leftElbow_measurement + \
         leftElbow_leftWrist_measurement
-    print(f'The hand measurement is {hand_measurement}')
 
     # Short Hand Measurement
     short_measurement = hand_measurement / 2
-    print(f'The short hand measurement is {short_measurement}')
 
     # Hip measurement
     hip_measurement = calculate_circumference(left_hip, right_hip) / 2
-    print(f'The hip measurement is {hip_measurement}')
 
     # Neck Measurement
     neck_measurement = euclidean_distance(left_hip, right_hip) / 2 * 3
-    print(f'The neck measurement is {neck_measurement}')
 
     # Calculate distances
     hip_to_knee_distance = euclidean_distance(left_hip, left_knee)
     knee_to_ankle_distance = euclidean_distance(left_knee, left_ankle)
     thigh_measurement = hip_to_knee_distance + knee_to_ankle_distance
-    print(f'The thigh measurement is {thigh_measurement}')
 
     # Leg Measurment
     leftHip_leftKnee_measurement = euclidean_distance(left_hip, left_knee)
     leftKnee_leftAnkle_measurement = euclidean_distance(left_knee, left_ankle)
     leg_measurement = leftHip_leftKnee_measurement + leftKnee_leftAnkle_measurement
-    print(f'The leg measurement is {leg_measurement}')
+
+    return top_measurement, shoulder_measurement, chest_measurement,
+    hand_measurement, short_measurement, hip_measurement, neck_measurement,
+    thigh_measurement, leg_measurement
