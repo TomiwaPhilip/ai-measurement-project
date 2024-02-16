@@ -1,33 +1,6 @@
 import numpy as np
 
-
-def get_measurements(keypoints):
-    real_world_coordinates = transform_points_coord(keypoints)
-    sc = scale_coord(real_world_coordinates, 1.5)
-    left_shoulder = sc[5]
-    right_shoulder = sc[6]
-    left_elbow = sc[7]
-    # right_elbow = sc[8]
-    left_wrist = sc[9]
-    # right_wrist = sc[10]
-    left_hip = sc[11]
-    right_hip = sc[12]
-    left_knee = sc[13]
-    # right_knee = sc[14]
-    left_ankle = sc[15]
-    # right_ankle = sc[16]
-
-    calculate_body_measurements(left_shoulder,
-                                right_shoulder,
-                                left_hip,
-                                right_hip,
-                                left_knee,
-                                left_elbow,
-                                left_wrist,
-                                left_ankle)
-
-    return
-
+cal_param_path = 'calibration paramters/calibration_params.npz'
 
 # Load calibration parameters
 mtx_loaded = None
@@ -117,54 +90,82 @@ def calculate_circumference(keypoint1, keypoint2):
     return circumference
 
 
-def calculate_body_measurements(left_shoulder,
-                                right_shoulder,
-                                left_hip,
-                                right_hip,
-                                left_knee,
-                                left_elbow,
-                                left_wrist,
-                                left_ankle):
+def calculate_body_measurements(left_shoulder, right_shoulder, left_hip, right_hip, left_knee, left_elbow, left_wrist, left_ankle):
 
     # Top Measurement
     shoulder_hip_measurement = euclidean_distance(left_shoulder, left_hip)
     hip_knee_measurement = euclidean_distance(left_hip, left_knee) / 2
-    top_measurement = shoulder_hip_measurement + hip_knee_measurement
+    top_measurement = round(shoulder_hip_measurement + hip_knee_measurement, 1)
 
     # Shoulder Measurement
-    shoulder_measurement = euclidean_distance(right_shoulder, left_shoulder)
+    shoulder_measurement = round(
+        euclidean_distance(right_shoulder, left_shoulder), 1)
 
     # Chest Measurement
-    chest_measurement = calculate_circumference(
-        right_shoulder, left_shoulder) / 2 * 2
+    chest_measurement = round(calculate_circumference(
+        right_shoulder, left_shoulder) / 2 * 2, 1)
 
     # Hand measurement
-    leftShoulder_leftElbow_measurement = euclidean_distance(
-        left_shoulder, left_elbow)
-    leftElbow_leftWrist_measurement = euclidean_distance(
-        left_elbow, left_wrist)
-    hand_measurement = leftShoulder_leftElbow_measurement + \
-        leftElbow_leftWrist_measurement
+    leftShoulder_leftElbow_measurement = round(
+        euclidean_distance(left_shoulder, left_elbow), 1)
+    leftElbow_leftWrist_measurement = round(
+        euclidean_distance(left_elbow, left_wrist), 1)
+    hand_measurement = round(
+        leftShoulder_leftElbow_measurement + leftElbow_leftWrist_measurement, 1)
 
     # Short Hand Measurement
-    short_measurement = hand_measurement / 2
+    short_measurement = round(hand_measurement / 2, 1)
 
     # Hip measurement
-    hip_measurement = calculate_circumference(left_hip, right_hip) / 2
+    hip_measurement = round(
+        calculate_circumference(left_hip, right_hip) / 2, 1)
 
     # Neck Measurement
-    neck_measurement = euclidean_distance(left_hip, right_hip) / 2 * 3
+    neck_measurement = round(euclidean_distance(
+        left_shoulder, right_shoulder) / 2 * 3, 1)
 
     # Calculate distances
-    hip_to_knee_distance = euclidean_distance(left_hip, left_knee)
-    knee_to_ankle_distance = euclidean_distance(left_knee, left_ankle)
-    thigh_measurement = hip_to_knee_distance + knee_to_ankle_distance
+    hip_to_knee_distance = round(euclidean_distance(left_hip, left_knee), 1)
+    knee_to_ankle_distance = round(
+        euclidean_distance(left_knee, left_ankle), 1)
+    thigh_measurement = round(hip_to_knee_distance + knee_to_ankle_distance, 1)
 
-    # Leg Measurment
-    leftHip_leftKnee_measurement = euclidean_distance(left_hip, left_knee)
-    leftKnee_leftAnkle_measurement = euclidean_distance(left_knee, left_ankle)
-    leg_measurement = leftHip_leftKnee_measurement + leftKnee_leftAnkle_measurement
+    # Leg Measurement
+    leftHip_leftKnee_measurement = round(
+        euclidean_distance(left_hip, left_knee), 1)
+    leftKnee_leftAnkle_measurement = round(
+        euclidean_distance(left_knee, left_ankle), 1)
+    leg_measurement = round(leftHip_leftKnee_measurement +
+                            leftKnee_leftAnkle_measurement, 1)
 
-    return top_measurement, shoulder_measurement, chest_measurement,
-    hand_measurement, short_measurement, hip_measurement, neck_measurement,
-    thigh_measurement, leg_measurement
+    return top_measurement, shoulder_measurement, chest_measurement, hand_measurement, short_measurement, hip_measurement, neck_measurement, thigh_measurement, leg_measurement
+
+
+# Get measurements
+def get_measurements(keypoints):
+    real_world_coordinates = transform_points_coord(keypoints)
+    sc = scale_coord(real_world_coordinates, 1.5)
+    left_shoulder = sc[5]
+    right_shoulder = sc[6]
+    left_elbow = sc[7]
+    # right_elbow = sc[8]
+    left_wrist = sc[9]
+    # right_wrist = sc[10]
+    left_hip = sc[11]
+    right_hip = sc[12]
+    left_knee = sc[13]
+    # right_knee = sc[14]
+    left_ankle = sc[15]
+    # right_ankle = sc[16]
+
+    top_measurement, shoulder_measurement, chest_measurement, hand_measurement, short_measurement, hip_measurement, neck_measurement, thigh_measurement, leg_measurement = calculate_body_measurements(left_shoulder,
+                                                                                                                                                                                                       right_shoulder,
+                                                                                                                                                                                                       left_hip,
+                                                                                                                                                                                                       right_hip,
+                                                                                                                                                                                                       left_knee,
+                                                                                                                                                                                                       left_elbow,
+                                                                                                                                                                                                       left_wrist,
+                                                                                                                                                                                                       left_ankle)
+    results = [top_measurement, shoulder_measurement, chest_measurement, hand_measurement,
+               short_measurement, hip_measurement, neck_measurement, thigh_measurement, leg_measurement]
+    return results

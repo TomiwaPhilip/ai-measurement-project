@@ -1,21 +1,27 @@
 from flask import Flask, request
+import jsonify
+
+from inference import preprocess_and_predict
+from run_measurement import get_measurements
 
 app = Flask(__name__)
 
-@app.route('/model-prediction', methods=["POST"])
-def process_image():
- 
+
+@app.route('/predict', methods=["POST"])
+def send_prediction():
+
     # Get the image from the request
     image_data = request.get_data()
 
-    # Process the image (e.g., perform any necessary decoding or resizing)
-    processed_image = preprocess_image(image_data)
-
     # Perform inference using the TensorFlow model
-    result = your_model.predict(processed_image)
+    keypoints = preprocess_and_predict(image_data)
+
+    # Perform measurements
+    results = get_measurements(keypoints)
 
     # Return the result
-    return jsonify({'result': result})
+    return jsonify({'result': results})
+
 
 if __name__ == '__main__':
     app.run(debug=True)

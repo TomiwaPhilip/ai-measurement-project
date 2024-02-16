@@ -1,6 +1,9 @@
 import tensorflow as tf
 import tensorflow_hub as hub
 
+# Model url
+model_url = 'https://tfhub.dev/tensorflow/movenet/singlepose/thunder/4'
+
 # Global variable to store the loaded model
 loaded_model = None
 
@@ -12,12 +15,12 @@ def load_model(model_url):
         loaded_model = hub.load(model_url).signatures["serving_default"]
 
 
-def preprocess_and_predict(model_url, image):
+def preprocess_and_predict(image, model_url=model_url):
     """This function is used to preprocess and predict on the movenet thunder model.
 
     Args:
         model_url (str): The link to the TensorFlow movenet singlepose thunder model.
-        image (tf.Tensor, str): The undistorted image through camera calibration for prediction.
+        image (str): The path to the image file.
 
     Returns:
         np.ndarray: Output from the model containing keypoints and confidence scores.
@@ -54,7 +57,7 @@ def preprocess_and_predict(model_url, image):
     keypoints_with_scores = outputs["output_0"].numpy()
 
     # Extract keypoints x,y
-    keypoints_xy = keypoints_with_scores[..., :2]
+    keypoints = keypoints_with_scores[..., :2]
 
     # Return outputs as keypoints with scores
-    return keypoints_xy
+    return keypoints
