@@ -1,6 +1,6 @@
 import numpy as np
 
-cal_param_path = 'calibration paramters/calibration_params.npz'
+cal_param_path = 'calibration paramters/calibration_parameters2.npz'
 
 # Load calibration parameters
 mtx_loaded = None

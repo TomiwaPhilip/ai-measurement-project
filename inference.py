@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow_hub as hub
+from flask import jsonify
 
 # Model url
 model_url = 'https://tfhub.dev/tensorflow/movenet/singlepose/thunder/4'
@@ -16,48 +17,46 @@ def load_model(model_url):
 
 
 def preprocess_and_predict(image, model_url=model_url):
-    """This function is used to preprocess and predict on the movenet thunder model.
+    try:
+        # Load the model (or reuse the loaded model)
+        load_model(model_url)
 
-    Args:
-        model_url (str): The link to the TensorFlow movenet singlepose thunder model.
-        image (str): The path to the image file.
+        # Set the model input size
+        input_size = 256
 
-    Returns:
-        np.ndarray: Output from the model containing keypoints and confidence scores.
-    """
-    # Load the model (or reuse the loaded model)
-    load_model(model_url)
+        if isinstance(image, str):  # Check if input is a file path
+            # Read image file
+            image_contents = tf.io.read_file(image)
 
-    # Set the model input size
-    input_size = 256
-
-    if isinstance(image, str):  # Check if input is a file path
-        # Read image file
-        image_contents = tf.io.read_file(image)
-
-        # Decode image based on file extension
-        if image.lower().endswith('.png'):
-            input_image = tf.image.decode_png(image_contents, channels=3)
-        elif image.lower().endswith('.jpeg') or image.lower().endswith('.jpg'):
-            input_image = tf.image.decode_jpeg(image_contents, channels=3)
+            # Decode image based on file extension
+            if image.lower().endswith('.png'):
+                input_image = tf.image.decode_png(image_contents, channels=3)
+            elif image.lower().endswith('.jpeg') or image.lower().endswith('.jpg'):
+                input_image = tf.image.decode_jpeg(image_contents, channels=3)
+            else:
+                raise ValueError(
+                    "Unsupported image format. Supported formats: PNG, JPEG/JPG.")
         else:
             raise ValueError(
-                "Unsupported image format. Supported formats: PNG, JPEG/JPG.")
-    else:
-        raise ValueError(
-            "Unsupported input type. Expected file path (str)")
+                "Unsupported input type. Expected file path (str)")
 
-    # Expand dimensions, resize, and cast
-    input_image = tf.expand_dims(input_image, axis=0)
-    input_image = tf.image.resize_with_pad(input_image, input_size, input_size)
-    input_image = tf.cast(input_image, dtype=tf.int32)
+        # Expand dimensions, resize, and cast
+        input_image = tf.expand_dims(input_image, axis=0)
+        input_image = tf.image.resize_with_pad(
+            input_image, input_size, input_size)
+        input_image = tf.cast(input_image, dtype=tf.int32)
 
-    # Perform inference on the model
-    outputs = loaded_model(input_image)
-    keypoints_with_scores = outputs["output_0"].numpy()
+        # Perform inference on the model
+        outputs = loaded_model(input_image)
+        keypoints_with_scores = outputs["output_0"].numpy()
 
-    # Extract keypoints x,y
-    keypoints = keypoints_with_scores[..., :2]
+        # Extract keypoints x,y
+        keypoints = keypoints_with_scores[..., :2]
 
-    # Return outputs as keypoints with scores
-    return keypoints
+        # Return outputs as keypoints with scores
+        return keypoints
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400  # Bad Request
+    except Exception as e:
+        # Internal Server Error
+        return jsonify({'error': f"An unexpected error occurred: {str(e)}"}), 500
