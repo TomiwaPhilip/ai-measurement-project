@@ -157,13 +157,13 @@ def calculate_body_measurements(left_shoulder, right_shoulder, left_hip, right_h
         neck_measurement = round(euclidean_distance(
             left_shoulder, right_shoulder) / 2 * 3, 1)
 
-        # Calculate distances
+        # Thigh Measurement
         hip_to_knee_distance = round(
             euclidean_distance(left_hip, left_knee), 1)
         knee_to_ankle_distance = round(
             euclidean_distance(left_knee, left_ankle), 1)
         thigh_measurement = round(
-            hip_to_knee_distance + knee_to_ankle_distance / 2, 1)
+            hip_to_knee_distance + knee_to_ankle_distance / 2.5, 1)
 
         # Leg Measurement
         leftHip_leftKnee_measurement = round(
