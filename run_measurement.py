@@ -29,9 +29,7 @@ def transform_points_coord(keypoints):
     try:
         # Load the camera matrix
         mtx_loaded = load_cal_param(param='mtx')
-        print(mtx_loaded)
 
-        print(f"keypoints from transform_points_coord{keypoints}")
         # Ensure keypoints has the expected shape
         if len(keypoints.shape) == 4:
             # Extract the relevant dimension
@@ -44,18 +42,12 @@ def transform_points_coord(keypoints):
             raise ValueError(
                 f"Unexpected shape of keypoints array {keypoints}")
 
-        print(f"successfully squeezed keypoints {keypoints_squeeze.shape}")
-
         # Add a row of ones to keypoints_xy to make it homogeneous coordinates
         homogeneous_coords = np.hstack(
             (keypoints_squeeze, np.ones((keypoints_squeeze.shape[0], 1))))
 
-        print("successfully converted keypoints to homogeneous coordinates")
-
         # Transpose homogeneous_coords to have shape (3, N)
         homogeneous_coords = homogeneous_coords.T
-        print(
-            f"successfully transposed homogeneous coordinates {homogeneous_coords.shape}")
 
         # Ensure mtx_loaded has shape (3, 3)
         if mtx_loaded.shape != (3, 3):
@@ -65,15 +57,11 @@ def transform_points_coord(keypoints):
         real_world_coordinates_homogeneous = np.dot(
             np.linalg.pinv(mtx_loaded), homogeneous_coords)
 
-        print("successfully converted to real-world coordinates")
-
         # Transpose back to have shape (N, 3)
         real_world_coordinates_homogeneous = real_world_coordinates_homogeneous.T
-        print("successfully transposed back")
 
         # Extract non-homogeneous coordinates
         real_world_coordinates = real_world_coordinates_homogeneous[:, :2]
-        print("successfully extracted non-homogeneous coordinates")
 
         return real_world_coordinates
     except Exception as e:
@@ -163,7 +151,7 @@ def calculate_body_measurements(left_shoulder, right_shoulder, left_hip, right_h
 
         # Hip measurement
         hip_measurement = round(
-            calculate_circumference(left_hip, right_hip) / 2, 1)
+            calculate_circumference(left_hip, right_hip), 1)
 
         # Neck Measurement
         neck_measurement = round(euclidean_distance(
@@ -175,7 +163,7 @@ def calculate_body_measurements(left_shoulder, right_shoulder, left_hip, right_h
         knee_to_ankle_distance = round(
             euclidean_distance(left_knee, left_ankle), 1)
         thigh_measurement = round(
-            hip_to_knee_distance + knee_to_ankle_distance, 1)
+            hip_to_knee_distance + knee_to_ankle_distance / 2, 1)
 
         # Leg Measurement
         leftHip_leftKnee_measurement = round(
@@ -193,8 +181,6 @@ def calculate_body_measurements(left_shoulder, right_shoulder, left_hip, right_h
 
 def get_measurements(keypoints):
     try:
-        print(
-            f"keypoints shape from get measurements function {keypoints}")
         real_world_coordinates = transform_points_coord(keypoints)
         sc = scale_coord(real_world_coordinates, 1.5)
         left_shoulder = sc[5]
