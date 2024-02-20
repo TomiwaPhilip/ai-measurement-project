@@ -29,7 +29,9 @@ def transform_points_coord(keypoints):
     try:
         # Load the camera matrix
         mtx_loaded = load_cal_param(param='mtx')
+        print(mtx_loaded)
 
+        print(f"keypoints from transform_points_coord{keypoints}")
         # Ensure keypoints has the expected shape
         if len(keypoints.shape) == 4:
             # Extract the relevant dimension
@@ -41,6 +43,8 @@ def transform_points_coord(keypoints):
             # Handle the case where keypoints has unexpected shape
             raise ValueError(
                 f"Unexpected shape of keypoints array {keypoints}")
+
+        print(f"successfully squeezed keypoints {keypoints_squeeze.shape}")
 
         # Add a row of ones to keypoints_xy to make it homogeneous coordinates
         homogeneous_coords = np.hstack(
@@ -189,6 +193,8 @@ def calculate_body_measurements(left_shoulder, right_shoulder, left_hip, right_h
 
 def get_measurements(keypoints):
     try:
+        print(
+            f"keypoints shape from get measurements function {keypoints}")
         real_world_coordinates = transform_points_coord(keypoints)
         sc = scale_coord(real_world_coordinates, 1.5)
         left_shoulder = sc[5]
@@ -212,8 +218,15 @@ def get_measurements(keypoints):
                                                                                                                                                                                                            left_elbow,
                                                                                                                                                                                                            left_wrist,
                                                                                                                                                                                                            left_ankle)
-        results = [top_measurement, shoulder_measurement, chest_measurement, hand_measurement,
-                   short_measurement, hip_measurement, neck_measurement, thigh_measurement, leg_measurement]
+        results = {'top_measurement': top_measurement,
+                   'shoulder_measurement': shoulder_measurement,
+                   'chest_measurement': chest_measurement,
+                   'hand_measurement': hand_measurement,
+                   'short_measurement': short_measurement,
+                   'hip_measurement': hip_measurement,
+                   'neck_measurement': neck_measurement,
+                   'thigh_measurement': thigh_measurement,
+                   'leg_measurement': leg_measurement}
         return results
     except Exception as e:
         # Internal Server Error

@@ -15,7 +15,7 @@ def load_model(model_url):
         loaded_model = hub.load(model_url).signatures["serving_default"]
 
 
-def preprocess_and_predict(image_content, model_url=model_url):
+def preprocess_and_predict(image, model_url=model_url):
     try:
         # Load the model (or reuse the loaded model)
         load_model(model_url)
@@ -23,8 +23,21 @@ def preprocess_and_predict(image_content, model_url=model_url):
         # Set the model input size
         input_size = 256
 
-        # Decode image from content
-        input_image = tf.image.decode_image(image_content, channels=3)
+        if isinstance(image, str):  # Check if input is a file path
+            # Read image file
+            image_contents = tf.io.read_file(image)
+
+            # Decode image based on file extension
+            if image.lower().endswith('.png'):
+                input_image = tf.image.decode_png(image_contents, channels=3)
+            elif image.lower().endswith('.jpeg') or image.lower().endswith('.jpg'):
+                input_image = tf.image.decode_jpeg(image_contents, channels=3)
+            else:
+                raise ValueError(
+                    "Unsupported image format. Supported formats: PNG, JPEG/JPG.")
+        else:
+            raise ValueError(
+                "Unsupported input type. Expected file path (str) or NumPy array (ndarray).")
 
         # Expand dimensions, resize, and cast
         input_image = tf.expand_dims(input_image, axis=0)
@@ -40,7 +53,7 @@ def preprocess_and_predict(image_content, model_url=model_url):
         keypoints = keypoints_with_scores[..., :2]
 
         # Return outputs as keypoints with scores
-        return keypoints.tolist()  # Convert to list for JSON serialization
+        return keypoints  # Convert to list for JSON serialization
     except ValueError as ve:
         return {'error': str(ve)}, 400  # Bad Request
     except Exception as e:
