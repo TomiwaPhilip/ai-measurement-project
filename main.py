@@ -22,29 +22,44 @@ def get_file_extension(content_type):
         return 'raw'
 
 
+def download_image(image_url):
+    try:
+        response_image = requests.get(image_url)
+        response_image.raise_for_status()  # Check for any download errors
+        return response_image.content
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f'Error downloading image: {str(e)}')
+
+
 @app.route('/predict', methods=["POST"])
 def send_prediction():
     try:
+        # Check if 'image_url' is present in JSON data
+        if request.is_json:
+            data = request.get_json()
+            image_url = data.get('image_url')
+        else:
+            # Check form data
+            image_url = request.form.get('image_url')
 
-        # Get the image URL from the request
-        image_url = request.form.get('image_url')
+            # Check query parameters
+            if image_url is None:
+                image_url = request.args.get('image_url')
+
+        if not image_url:
+            return jsonify({'error': 'No image_url provided in the request'}), 400
 
         # Download the image from the URL
-        try:
-            response_image = requests.get(image_url)
-            response_image.raise_for_status()  # Check for any download errors
+        image_content = download_image(image_url)
 
-            # Determine file extension based on content type
-            content_type = response_image.headers.get('content-type')
-            file_extension = get_file_extension(content_type)
+        # Determine file extension based on content type
+        content_type = requests.head(image_url).headers.get('content-type')
+        file_extension = get_file_extension(content_type)
 
-            # Save the image to a temporary file with the appropriate extension
-            with tempfile.NamedTemporaryFile(suffix=f'.{file_extension}', delete=False) as temp_file:
-                temp_file.write(response_image.content)
-                temp_file_path = temp_file.name
-
-        except requests.exceptions.RequestException as e:
-            return jsonify({'error': f'Error downloading image: {str(e)}'}), 400
+        # Save the image to a temporary file with the appropriate extension
+        with tempfile.NamedTemporaryFile(suffix=f'.{file_extension}', delete=False) as temp_file:
+            temp_file.write(image_content)
+            temp_file_path = temp_file.name
 
         # Perform inference using the TensorFlow model
         keypoints = preprocess_and_predict(temp_file_path)
