@@ -149,9 +149,17 @@ def calculate_body_measurements(left_shoulder, right_shoulder, left_hip, right_h
         # Short Hand Measurement
         short_measurement = round(hand_measurement / 2, 1)
 
+        # Base measurement
+        base_measurement = round(
+            calculate_circumference(left_wrist, left_elbow) / 2.5, 1)
+
         # Hip measurement
         hip_measurement = round(
             calculate_circumference(left_hip, right_hip), 1)
+
+        # Waist Measurement
+        waist_measurement = round(
+            calculate_circumference(left_hip, right_hip) / 1.5, 1)
 
         # Neck Measurement
         neck_measurement = round(euclidean_distance(
@@ -165,6 +173,10 @@ def calculate_body_measurements(left_shoulder, right_shoulder, left_hip, right_h
         thigh_measurement = round(
             hip_to_knee_distance + knee_to_ankle_distance / 2.5, 1)
 
+        # Knee Measurement
+        knee_measurement = round(
+            calculate_circumference(left_knee, left_ankle) / 2.5, 1)
+
         # Leg Measurement
         leftHip_leftKnee_measurement = round(
             euclidean_distance(left_hip, left_knee), 1)
@@ -173,7 +185,7 @@ def calculate_body_measurements(left_shoulder, right_shoulder, left_hip, right_h
         leg_measurement = round(leftHip_leftKnee_measurement +
                                 leftKnee_leftAnkle_measurement, 1)
 
-        return top_measurement, shoulder_measurement, chest_measurement, hand_measurement, short_measurement, hip_measurement, neck_measurement, thigh_measurement, leg_measurement
+        return top_measurement, shoulder_measurement, chest_measurement, hand_measurement, base_measurement, short_measurement, hip_measurement, waist_measurement, neck_measurement, thigh_measurement, knee_measurement, leg_measurement
     except Exception as e:
         # Internal Server Error
         return {'error': f'measurement calculation error, {str(e)}'}, 500
@@ -196,22 +208,25 @@ def get_measurements(keypoints):
         left_ankle = sc[15]
         # right_ankle = sc[16]
 
-        top_measurement, shoulder_measurement, chest_measurement, hand_measurement, short_measurement, hip_measurement, neck_measurement, thigh_measurement, leg_measurement = calculate_body_measurements(left_shoulder,
-                                                                                                                                                                                                           right_shoulder,
-                                                                                                                                                                                                           left_hip,
-                                                                                                                                                                                                           right_hip,
-                                                                                                                                                                                                           left_knee,
-                                                                                                                                                                                                           left_elbow,
-                                                                                                                                                                                                           left_wrist,
-                                                                                                                                                                                                           left_ankle)
+        top_measurement, shoulder_measurement, chest_measurement, hand_measurement, base_measurement, short_measurement, hip_measurement, waist_measurement, neck_measurement, thigh_measurement, knee_measurement, leg_measurement = calculate_body_measurements(left_shoulder,
+                                                                                                                                                                                                                                                                  right_shoulder,
+                                                                                                                                                                                                                                                                  left_hip,
+                                                                                                                                                                                                                                                                  right_hip,
+                                                                                                                                                                                                                                                                  left_knee,
+                                                                                                                                                                                                                                                                  left_elbow,
+                                                                                                                                                                                                                                                                  left_wrist,
+                                                                                                                                                                                                                                                                  left_ankle)
         results = {'top_measurement': top_measurement,
                    'shoulder_measurement': shoulder_measurement,
                    'chest_measurement': chest_measurement,
                    'hand_measurement': hand_measurement,
+                   'base_measurement': base_measurement,
                    'short_measurement': short_measurement,
                    'hip_measurement': hip_measurement,
+                   'waist_measurement': waist_measurement,
                    'neck_measurement': neck_measurement,
                    'thigh_measurement': thigh_measurement,
+                   'knee_measurement': knee_measurement,
                    'leg_measurement': leg_measurement}
         return results
     except Exception as e:
